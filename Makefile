@@ -1,7 +1,7 @@
 # Makefile for doc-builder Development
 
 # Phony targets
-.PHONY: install test clean generate regenerate-checkpoint test-debug
+.PHONY: install test clean generate regenerate-checkpoint test-debug lint
 
 # Install the package in editable mode with test dependencies
 install:
@@ -16,7 +16,7 @@ test:
 # Run linter
 lint:
 	@echo "Running linter..."
-	ruff check .
+	python -m ruff check .
 
 # Run tests and keep the output for inspection
 test-debug:

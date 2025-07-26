@@ -31,6 +31,7 @@ test = [
     "pytest",
     "docx2txt",
     "imagehash",
+    "ruff",
 ]
 
 [tool.setuptools.packages.find]
