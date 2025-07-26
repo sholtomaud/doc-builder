@@ -72,9 +72,14 @@ For each report you want to generate, create a `report.json` file. This file tel
 
 Navigate to your project directory and run the `doc-builder` command, pointing it to your report's directory.
 ```bash
-doc-builder studies/MyFirstReport
+doc-builder generate studies/MyFirstReport
 ```
 The generated report will be saved in the `generated_reports` directory.
+
+You can also generate reports for all studies in a directory at once:
+```bash
+doc-builder batch studies
+```
 
 ## For Developers
 

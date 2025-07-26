@@ -17,13 +17,9 @@ TEST_PROJECT_DIR = ROOT_DIR / "tests" / "tmp" / "test_project"
 GENERATED_REPORTS_DIR = TEST_PROJECT_DIR / "generated_reports"
 
 
-def get_all_study_dirs(exclude=None):
+def get_all_study_dirs():
     """Finds all valid study directories in the test data folder."""
-    if exclude is None:
-        exclude = []
-    return [
-        d for d in TEST_DATA_DIR.iterdir() if d.is_dir() and d.name not in exclude
-    ]
+    return [d for d in TEST_DATA_DIR.iterdir() if d.is_dir()]
 
 
 # --- Test Fixture ---
@@ -31,26 +27,19 @@ def get_all_study_dirs(exclude=None):
 def setup_and_teardown_test_environment():
     """
     A fixture to set up the test environment before tests run and clean up after.
-    It generates reports for all studies EXCEPT those that require special local
-    dependencies (like Rhino).
     """
     os.environ["SOURCE_DATE_EPOCH"] = "0"
 
     if TEST_PROJECT_DIR.exists():
         shutil.rmtree(TEST_PROJECT_DIR)
     TEST_PROJECT_DIR.mkdir(parents=True)
-    
-    # Create a temporary directory for the batch operation, excluding Study2
-    batch_studies_dir = TEST_PROJECT_DIR / "batch_studies"
-    shutil.copytree(TEST_DATA_DIR, batch_studies_dir)
-    shutil.rmtree(batch_studies_dir / "Study2")
-
+    shutil.copytree(TEST_DATA_DIR, TEST_PROJECT_DIR / "studies")
     shutil.copytree(TEMPLATE_DIR, TEST_PROJECT_DIR / "templates")
 
     cmd = [
         "doc-builder",
         "batch",
-        str(batch_studies_dir),
+        str(TEST_PROJECT_DIR / "studies"),
         "--template-dir",
         str(TEST_PROJECT_DIR / "templates"),
         "--output-dir",
@@ -68,7 +57,7 @@ def setup_and_teardown_test_environment():
 
 
 # --- Data-Driven Tests ---
-@pytest.mark.parametrize("study_dir", get_all_study_dirs(exclude=["Study2"]))
+@pytest.mark.parametrize("study_dir", get_all_study_dirs())
 def test_report_file_is_generated(study_dir):
     """Tests that the primary .docx report file is created for each study."""
     report_name = f"{study_dir.name}_report.docx"
@@ -120,12 +109,17 @@ def test_rhino_image_is_generated_and_embedded_locally(tmp_path):
 
 
 
-@pytest.mark.parametrize("study_dir", get_all_study_dirs(exclude=["Study2"]))
+@pytest.mark.parametrize("study_dir", get_all_study_dirs())
 def test_docx_content_matches_checkpoint(study_dir):
     """
     Tests that the text content of the .docx file matches the checkpoint for each
     study.
     """
+    if study_dir.name == "Study2" and not shutil.which(
+        "/Applications/Rhino 8.app/Contents/Resources/bin/rhinocode"
+    ):
+        pytest.skip("Rhino is not installed, skipping Study2 content match test.")
+
     report_name = f"{study_dir.name}_report.docx"
     generated_report = GENERATED_REPORTS_DIR / report_name
     expected_report = EXPECTED_DIR / report_name
@@ -140,12 +134,17 @@ def test_docx_content_matches_checkpoint(study_dir):
     ), f"Text content mismatch for '{report_name}'."
 
 
-@pytest.mark.parametrize("study_dir", get_all_study_dirs(exclude=["Study2"]))
+@pytest.mark.parametrize("study_dir", get_all_study_dirs())
 def test_image_outputs_are_visually_consistent(study_dir):
     """
     Tests that generated images are visually consistent with their checkpoints
     by comparing their perceptual hashes.
     """
+    if study_dir.name == "Study2" and not shutil.which(
+        "/Applications/Rhino 8.app/Contents/Resources/bin/rhinocode"
+    ):
+        pytest.skip("Rhino is not installed, skipping Study2 image consistency test.")
+
     generated_images_dir = GENERATED_REPORTS_DIR / "tmp_images"
     expected_images_dir = EXPECTED_DIR / "tmp_images"
 
