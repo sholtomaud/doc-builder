@@ -7,18 +7,25 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+
 def plot_pairplot(plot_config: dict, data: pd.DataFrame, study_name: str) -> plt.Figure:
     """Generates a pairplot from the given data."""
     fig = plt.figure()
     sns.pairplot(data)
     return fig
 
-def plot_placeholder(plot_config: dict, data: pd.DataFrame, study_name: str) -> plt.Figure:
+
+def plot_placeholder(
+    plot_config: dict, data: pd.DataFrame, study_name: str
+) -> plt.Figure:
     """Generates a placeholder image with text."""
     fig = plt.figure()
-    text = plot_config.get("text", "Placeholder").replace("{{ study_name }}", study_name)
+    text = plot_config.get("text", "Placeholder").replace(
+        "{{ study_name }}", study_name
+    )
     plt.text(0.5, 0.5, text, ha="center", va="center", fontsize=20)
     return fig
+
 
 # The registry that maps plot types to their corresponding functions.
 # To add a new plot type, create a function and add it to this dictionary.
@@ -27,7 +34,10 @@ PLOT_REGISTRY = {
     "placeholder": plot_placeholder,
 }
 
-def generate_plot_from_config(plot_config: dict, data: pd.DataFrame, study_name: str) -> plt.Figure | None:
+
+def generate_plot_from_config(
+    plot_config: dict, data: pd.DataFrame, study_name: str
+) -> plt.Figure | None:
     """
     Looks up the plot type in the registry and calls the corresponding function.
     """
