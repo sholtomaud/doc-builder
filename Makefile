@@ -11,12 +11,12 @@ install:
 # Run tests and clean up afterwards
 test:
 	@echo "Running tests..."
-	pytest
+	python -m pytest
 
 # Run tests and keep the output for inspection
 test-debug:
 	@echo "Running tests and keeping output in tests/tmp/..."
-	@KEEP_TEST_OUTPUT=1 pytest
+	@KEEP_TEST_OUTPUT=1 python -m pytest
 
 # Clean generated files
 clean:
@@ -28,9 +28,9 @@ generate:
 	@echo "Generating report for Study1..."
 	doc-builder generate tests/data/Study1
 
-# Regenerate the test checkpoint for all studies
+# Regenerate the test checkpoint
 regenerate-checkpoint:
-	@echo "Regenerating test checkpoint for all studies..."
+	@echo "Regenerating test checkpoint..."
 	@rm -rf tests/expected_output/*
 	@SOURCE_DATE_EPOCH=0 python -m src.document_generator batch tests/data --template-dir templates --output-dir tests/expected_output
 	@echo "Checkpoint updated."
