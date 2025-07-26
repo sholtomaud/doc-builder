@@ -45,7 +45,7 @@ start_session() {
     echo
 
     # Launch Gemini with our standard safety flags
-    gemini --sandbox --checkpointing
+    npx https://github.com/google-gemini/gemini-cli --sandbox --checkpointing
 }
 
 # --- Main Script Logic ---
