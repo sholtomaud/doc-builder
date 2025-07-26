@@ -17,9 +17,13 @@ TEST_PROJECT_DIR = ROOT_DIR / "tests" / "tmp" / "test_project"
 GENERATED_REPORTS_DIR = TEST_PROJECT_DIR / "generated_reports"
 
 
-def get_all_study_dirs():
+def get_all_study_dirs(exclude=None):
     """Finds all valid study directories in the test data folder."""
-    return [d for d in TEST_DATA_DIR.iterdir() if d.is_dir()]
+    if exclude is None:
+        exclude = []
+    return [
+        d for d in TEST_DATA_DIR.iterdir() if d.is_dir() and d.name not in exclude
+    ]
 
 
 # --- Test Fixture ---
@@ -27,19 +31,26 @@ def get_all_study_dirs():
 def setup_and_teardown_test_environment():
     """
     A fixture to set up the test environment before tests run and clean up after.
+    It generates reports for all studies EXCEPT those that require special local
+    dependencies (like Rhino).
     """
     os.environ["SOURCE_DATE_EPOCH"] = "0"
 
     if TEST_PROJECT_DIR.exists():
         shutil.rmtree(TEST_PROJECT_DIR)
     TEST_PROJECT_DIR.mkdir(parents=True)
-    shutil.copytree(TEST_DATA_DIR, TEST_PROJECT_DIR / "studies")
+    
+    # Create a temporary directory for the batch operation, excluding Study2
+    batch_studies_dir = TEST_PROJECT_DIR / "batch_studies"
+    shutil.copytree(TEST_DATA_DIR, batch_studies_dir)
+    shutil.rmtree(batch_studies_dir / "Study2")
+
     shutil.copytree(TEMPLATE_DIR, TEST_PROJECT_DIR / "templates")
 
     cmd = [
         "doc-builder",
         "batch",
-        str(TEST_PROJECT_DIR / "studies"),
+        str(batch_studies_dir),
         "--template-dir",
         str(TEST_PROJECT_DIR / "templates"),
         "--output-dir",
@@ -57,7 +68,7 @@ def setup_and_teardown_test_environment():
 
 
 # --- Data-Driven Tests ---
-@pytest.mark.parametrize("study_dir", get_all_study_dirs())
+@pytest.mark.parametrize("study_dir", get_all_study_dirs(exclude=["Study2"]))
 def test_report_file_is_generated(study_dir):
     """Tests that the primary .docx report file is created for each study."""
     report_name = f"{study_dir.name}_report.docx"
@@ -68,10 +79,48 @@ def test_report_file_is_generated(study_dir):
     ), f"Report '{report_name}' is empty."
 
 
+@pytest.mark.local
+def test_rhino_image_is_generated_and_embedded_locally(tmp_path):
+    """
+    A local-only test to verify the full Rhino generation and embedding process.
+    This test runs its own generation command to keep it isolated.
+    """
+    local_output_dir = tmp_path / "local_rhino_test"
+    local_output_dir.mkdir()
+    study_2_dir = TEST_DATA_DIR / "Study2"
+
+    cmd = [
+        "doc-builder",
+        "generate",
+        str(study_2_dir),
+        "--template-dir",
+        str(TEMPLATE_DIR),
+        "--output-dir",
+        str(local_output_dir),
+    ]
+    # We expect this to succeed locally
+    subprocess.run(cmd, check=True, capture_output=True, text=True)
+
+    # 1. Check that the report was generated
+    report_path = local_output_dir / "Study2_report.docx"
+    assert report_path.exists(), "Report for Study2 was not generated in local test."
+
+    # 2. Check that the Rhino image file was created
+    image_path = local_output_dir / "tmp_images" / "Study2_rhino_capture.png"
+    assert image_path.exists(), "Rhino-generated image was not created."
+    assert image_path.stat().st_size > 0, "Rhino-generated image is empty."
+
+    # 3. Check that the placeholder was replaced in the document
+    report_text = docx2txt.process(report_path)
+    assert "{$ img:rhino_view $}" not in report_text, \
+        "The 'rhino_view' placeholder was not replaced in the document."
 
 
 
-@pytest.mark.parametrize("study_dir", get_all_study_dirs())
+
+
+
+@pytest.mark.parametrize("study_dir", get_all_study_dirs(exclude=["Study2"]))
 def test_docx_content_matches_checkpoint(study_dir):
     """
     Tests that the text content of the .docx file matches the checkpoint for each
@@ -91,7 +140,7 @@ def test_docx_content_matches_checkpoint(study_dir):
     ), f"Text content mismatch for '{report_name}'."
 
 
-@pytest.mark.parametrize("study_dir", get_all_study_dirs())
+@pytest.mark.parametrize("study_dir", get_all_study_dirs(exclude=["Study2"]))
 def test_image_outputs_are_visually_consistent(study_dir):
     """
     Tests that generated images are visually consistent with their checkpoints

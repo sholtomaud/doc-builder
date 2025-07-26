@@ -11,7 +11,7 @@ install:
 # Run tests and clean up afterwards
 test:
 	@echo "Running tests..."
-	python -m pytest
+	python -m pytest $(PYTEST_ARGS)
 
 # Run linter
 lint:
