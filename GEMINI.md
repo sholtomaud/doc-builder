@@ -87,4 +87,18 @@ If intentional changes are made to the output, the checkpoint must be updated:
 # This command cleans the old checkpoint and regenerates it with the latest output
 make regenerate-checkpoint 
 ```
-*(Note: I will need to add this `regenerate-checkpoint` target to the `Makefile`)*
+
+## 6. Standard Workflow (`gemini.sh`)
+
+To ensure a safe and consistent development process, a wrapper script `gemini.sh` has been created. This is the standard way to start a work session on this project.
+
+To start, simply run:
+```bash
+./gemini.sh
+```
+This script will automatically:
+1.  **Check for uncommitted git changes.**
+2.  **Run pre-flight checks** (`lint` and `test`) to ensure the project is in a good state.
+3.  **Launch the Gemini CLI** with `--sandbox` and `--checkpointing` enabled.
+4.  **Display safety reminders** before the session begins.
+
