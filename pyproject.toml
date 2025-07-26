@@ -30,6 +30,7 @@ dependencies = [
 test = [
     "pytest",
     "docx2txt",
+    "imagehash",
 ]
 
 [tool.setuptools.packages.find]
@@ -37,3 +38,9 @@ where = ["src"]
 
 [project.scripts]
 doc-builder = "document_generator:app"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
