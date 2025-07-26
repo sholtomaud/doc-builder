@@ -1,0 +1,9 @@
+python-docx
+typer
+markdown-it-py
+pandas
+numpy
+seaborn
+matplotlib
+pytest
+docx2txt

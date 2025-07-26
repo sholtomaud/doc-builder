@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doc-builder"
+version = "0.2.0"
+authors = [
+  { name="Gemini", email="gemini@google.com" },
+]
+description = "A flexible, template-based tool to generate MS Word documents from data."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "typer",
+    "python-docx",
+    "docxtpl",
+    "pandas",
+    "numpy",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+doc-builder = "document_generator:app"
