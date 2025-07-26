@@ -18,26 +18,5 @@
       "type": "pairplot",
       "data_source": "data.csv"
     }
-  },
-  "rhino": {
-    "enabled": true,
-    "images": {
-      "rhino_view": {
-        "output_filename": "rhino_capture.png",
-        "pre_commands": [
-          "_SelAll",
-          "_Delete",
-          "_-Sphere 0,0,0 10 _Enter",
-          "_-SetDisplayMode _Mode=Rendered _Enter"
-        ],
-        "post_commands": [
-          "_SelAll",
-          "_Delete"
-        ],
-        "width": 800,
-        "height": 600,
-        "delay": 3
-      }
-    }
   }
 }

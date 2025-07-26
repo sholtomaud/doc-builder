@@ -68,6 +68,9 @@ def test_report_file_is_generated(study_dir):
     ), f"Report '{report_name}' is empty."
 
 
+
+
+
 @pytest.mark.parametrize("study_dir", get_all_study_dirs())
 def test_docx_content_matches_checkpoint(study_dir):
     """

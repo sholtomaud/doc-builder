@@ -34,8 +34,11 @@ generate:
 	doc-builder generate tests/data/Study1
 
 # Regenerate the test checkpoint
-regenerate-checkpoint:
+regenerate-checkpoint: clean
 	@echo "Regenerating test checkpoint..."
+	@mkdir -p tests/tmp/checkpoint_generation
+	@SOURCE_DATE_EPOCH=0 python -m src.document_generator batch tests/data --template-dir templates --output-dir tests/tmp/checkpoint_generation
 	@rm -rf tests/expected_output/*
-	@SOURCE_DATE_EPOCH=0 python -m src.document_generator batch tests/data --template-dir templates --output-dir tests/expected_output
+	@cp -R tests/tmp/checkpoint_generation/* tests/expected_output/
+	@rm -rf tests/tmp
 	@echo "Checkpoint updated."
