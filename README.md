@@ -1,6 +1,7 @@
 # Document Builder (`doc-builder`)
 
-[![Python CI](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/actions/workflows/ci.yml)
+[![Test Status](https://github.com/sholtomaud/doc-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/sholtomaud/doc-builder/actions/workflows/ci.yml)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
 
 `doc-builder` is a flexible, template-based command-line tool to generate richly formatted MS Word documents from various data sources. It uses a `.docx` template file and a `report.json` configuration to give you full control over your document's structure and content.
 
