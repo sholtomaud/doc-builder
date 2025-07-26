@@ -13,8 +13,8 @@ from docx.shared import Inches
 from docxtpl import DocxTemplate, InlineImage
 from typing_extensions import Annotated
 
-from .plotting import generate_plot
-from .statistics import run_analysis
+from analysis import run_analysis
+from plotting import generate_plot
 
 # Setup logging
 logging.basicConfig(
