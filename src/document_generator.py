@@ -10,7 +10,7 @@ import markdown
 import pandas as pd
 import typer
 from docx.shared import Inches
-from docxtpl import DocxTemplate
+from docxtpl import DocxTemplate, InlineImage
 from typing_extensions import Annotated
 
 from .plotting import generate_plot
@@ -29,34 +29,11 @@ def read_and_strip_markdown_heading(path: Path) -> str:
     """Reads a markdown file and removes the first line if it's a heading."""
     if not path.exists():
         return f"Content for {path.stem} not found."
-
     lines = path.read_text().splitlines()
-
     if lines and lines[0].strip().startswith("#"):
         return "\n".join(lines[1:]).strip()
     else:
         return "\n".join(lines).strip()
-
-
-def replace_image_placeholders(doc, image_paths):
-    """
-    Finds image placeholders like '{$ img:key $}' in the document and replaces them
-    with the actual images.
-    """
-    for key, path in image_paths.items():
-        placeholder = f"{{$ img:{key} $}}"
-        for paragraph in doc.paragraphs:
-            if placeholder in paragraph.text:
-                if paragraph.text.strip() == placeholder:
-                    paragraph.clear()
-                    run = paragraph.add_run()
-                    run.add_picture(str(path), width=Inches(6)) # Standard width
-                else:
-                    text_before, _, text_after = paragraph.text.partition(placeholder)
-                    paragraph.text = text_before
-                    run = paragraph.add_run()
-                    run.add_picture(str(path), width=Inches(6))
-                    paragraph.add_run(text_after)
 
 
 def find_rhino_executable():
@@ -76,19 +53,15 @@ def run_rhinocode_command(rhino_executable: str, command: str):
     if not rhino_executable:
         logging.error("Rhino executable not found.")
         return None
-
     cmd = [rhino_executable, "command", command]
     logging.info(f"Executing Rhino command: {command}")
     process = subprocess.run(cmd, capture_output=True, text=True, check=False)
-
     if process.stdout:
         logging.info(f"  [>] Rhino Stdout: {process.stdout.strip()}")
     if process.stderr:
         logging.warning(f"  [>] Rhino Stderr: {process.stderr.strip()}")
-
     if process.returncode != 0:
         logging.error(f"  [!] Rhino command failed with exit code {process.returncode}")
-
     return process
 
 
@@ -99,10 +72,8 @@ def generate_rhino_image(
     output_filename = f"{study_name}_{rhino_config['output_filename']}"
     output_path = temp_dir.resolve() / output_filename
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
     for command in rhino_config.get("pre_commands", []):
         run_rhinocode_command(rhino_executable, command)
-
     capture_command = (
         f'_-ViewCaptureToFile '
         f'"{output_path}" '
@@ -113,12 +84,9 @@ def generate_rhino_image(
         f'_Enter'
     )
     run_rhinocode_command(rhino_executable, capture_command)
-
     time.sleep(rhino_config.get("delay", 2))
-
     for command in rhino_config.get("post_commands", []):
         run_rhinocode_command(rhino_executable, command)
-
     if output_path.exists():
         logging.info(f"Successfully generated Rhino image: {output_path}")
         return output_path
@@ -127,8 +95,10 @@ def generate_rhino_image(
         return None
 
 
-def process_rhino_images(config: dict, study_name: str, temp_dir: Path) -> dict:
-    """Processes all Rhino image configurations."""
+def process_rhino_images(
+    config: dict, study_name: str, temp_dir: Path, doc: DocxTemplate
+) -> dict:
+    """Processes all Rhino image configurations and returns a context dict."""
     rhino_executable = find_rhino_executable()
     if not rhino_executable:
         logging.warning("Rhino executable not found. Skipping Rhino image generation.")
@@ -138,12 +108,12 @@ def process_rhino_images(config: dict, study_name: str, temp_dir: Path) -> dict:
     if not rhino_config or not rhino_config.get("enabled", False):
         return {}
 
-    image_paths = {}
+    image_context = {}
     for key, image_spec in rhino_config.get("images", {}).items():
         path = generate_rhino_image(image_spec, study_name, temp_dir, rhino_executable)
         if path:
-            image_paths[key] = path
-    return image_paths
+            image_context[key] = InlineImage(doc, str(path), width=Inches(4))
+    return image_context
 
 
 def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path):
@@ -169,7 +139,6 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
         "study_name": study_dir.name,
         "author": config.get("author", "N/A"),
         "date": datetime.now().strftime("%Y-%m-%d"),
-        # Provide defaults for legacy values to ensure template doesn't break
         "avg_flow_rate": 0,
         "max_efficiency": 0,
         "power_output": 0,
@@ -178,15 +147,13 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
     # --- Markdown Sections ---
     for key, rel_path in config.get("sections", {}).items():
         md_path = study_dir / rel_path
-        # Using markdown library to convert to basic text format for docx
         context[key] = markdown.markdown(read_and_strip_markdown_heading(md_path))
 
     # --- Data Loading ---
     data_path = study_dir / config["data_source"]
     data = pd.read_csv(data_path) if data_path.exists() else pd.DataFrame()
 
-    # --- Legacy Data Calculation (for backward compatibility) ---
-    # This ensures that older report configs that rely on these values still work.
+    # --- Legacy Data Calculation ---
     required_cols = ["flow_rate", "efficiency", "power_output"]
     if not data.empty and all(col in data.columns for col in required_cols):
         context["avg_flow_rate"] = data["flow_rate"].mean()
@@ -194,10 +161,8 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
         context["power_output"] = data["power_output"].mean()
 
     # --- New Analysis Pipeline ---
-    context['plots'] = {}
     context['stats'] = {}
-    image_paths = {} # To hold paths for placeholder replacement
-
+    image_context = {}
     analyses = config.get("analyses", {})
 
     # Generate plots
@@ -205,7 +170,7 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
         plot_key = plot_config["key"]
         try:
             plot_path = generate_plot(plot_config, data, temp_image_dir)
-            image_paths[plot_key] = plot_path # Store for placeholder replacement
+            image_context[plot_key] = InlineImage(doc, str(plot_path), width=Inches(6))
         except Exception as e:
             logging.error(f"Failed to generate plot '{plot_key}': {e}")
 
@@ -218,22 +183,18 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
         except Exception as e:
             logging.error(f"Failed to run analysis '{stat_key}': {e}")
 
-    # --- Legacy Image Generation (for backward compatibility) ---
-    for key, image_config in config.get("images", {}).items():
-        # This part might need to be refactored or deprecated
-        # For now, let's assume it's handled by the new plot system if possible
-        pass
+    # --- Image Generation ---
+    # Process Rhino images and add them to the context
+    rhino_image_context = process_rhino_images(
+        config, study_dir.name, temp_image_dir, doc
+    )
+    image_context.update(rhino_image_context)
 
-    # --- Rhino Image Generation ---
-    rhino_image_paths = process_rhino_images(config, study_dir.name, temp_image_dir)
-    image_paths.update(rhino_image_paths)
+    # Add all generated images to the main context
+    context.update(image_context)
 
     # --- Rendering ---
     doc.render(context)
-
-    # Replace image placeholders like '{$ img:key $}'
-    replace_image_placeholders(doc.docx, image_paths)
-
     output_file = output_dir / f"{study_dir.name}_report.docx"
     doc.save(output_file)
     logging.info(f"Successfully generated report: {output_file}")
