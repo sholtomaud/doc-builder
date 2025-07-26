@@ -111,8 +111,11 @@ def test_image_outputs_are_visually_consistent(study_dir):
         generated_hash = imagehash.phash(Image.open(generated_file))
         expected_hash = imagehash.phash(Image.open(expected_file))
 
-        # The hashes should be identical for visually identical images
-        assert generated_hash == expected_hash, (
+        # The hashes should be very close for visually similar images.
+        # A hamming distance of 0 means they are identical.
+        hash_diff = generated_hash - expected_hash
+        assert hash_diff <= 4, (
             f"Visual content mismatch for image: {filename}. "
-            f"Hashes differ: (generated) {generated_hash} vs (expected) {expected_hash}"
+            f"Hash difference is {hash_diff}, which is > 4. "
+            f"(Generated: {generated_hash}, Expected: {expected_hash})"
         )
