@@ -165,7 +165,7 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
     image_context = {}
     analyses = config.get("analyses", {})
 
-    # Generate plots
+    # Generate plots from the new 'analyses' section
     for plot_config in analyses.get("plots", []):
         plot_key = plot_config["key"]
         try:
@@ -182,6 +182,24 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
             context['stats'][stat_key] = result
         except Exception as e:
             logging.error(f"Failed to run analysis '{stat_key}': {e}")
+
+    # --- Legacy Image Generation (for backward compatibility) ---
+    for key, image_config in config.get("images", {}).items():
+        try:
+            # Adapt the legacy config to the new generate_plot function
+            plot_config = {
+                "key": key,
+                "type": image_config["type"],
+                **image_config,
+            }
+            # The old format might pass a data source string, not a DataFrame
+            plot_data_path = study_dir / image_config.get("data_source", config["data_source"])
+            plot_data = pd.read_csv(plot_data_path) if plot_data_path.exists() else data
+
+            plot_path = generate_plot(plot_config, plot_data, temp_image_dir)
+            image_context[key] = InlineImage(doc, str(plot_path), width=Inches(6))
+        except Exception as e:
+            logging.error(f"Failed to generate legacy image '{key}': {e}")
 
     # --- Image Generation ---
     # Process Rhino images and add them to the context
