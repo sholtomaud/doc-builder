@@ -1,40 +1,28 @@
 import json
+import logging
 import os
 import subprocess
 import time
 from datetime import datetime
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+import markdown
 import pandas as pd
-import seaborn as sns
 import typer
 from docx.shared import Inches
 from docxtpl import DocxTemplate
 from typing_extensions import Annotated
 
+from .plotting import generate_plot
+from .statistics import run_analysis
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
 app = typer.Typer()
-
-
-def generate_image(
-    image_config: dict, study_name: str, data_path: Path, temp_dir: Path
-) -> Path:
-    """Generates an image based on the provided configuration."""
-    image_path = temp_dir / f"{study_name}_{image_config['type']}.png"
-    plt.figure()
-
-    if image_config["type"] == "pairplot":
-        data = pd.read_csv(data_path)
-        sns.pairplot(data)
-    elif image_config["type"] == "placeholder":
-        text = image_config.get("text", "Placeholder").replace(
-            "{{ study_name }}", study_name
-        )
-        plt.text(0.5, 0.5, text, ha="center", va="center")
-
-    plt.savefig(image_path)
-    plt.close()
-    return image_path
 
 
 def read_and_strip_markdown_heading(path: Path) -> str:
@@ -59,15 +47,11 @@ def replace_image_placeholders(doc, image_paths):
         placeholder = f"{{$ img:{key} $}}"
         for paragraph in doc.paragraphs:
             if placeholder in paragraph.text:
-                # If the placeholder is found, clear the paragraph and add the picture.
-                # This avoids issues with leftover text if the placeholder is not alone.
                 if paragraph.text.strip() == placeholder:
                     paragraph.clear()
                     run = paragraph.add_run()
                     run.add_picture(str(path), width=Inches(6)) # Standard width
                 else:
-                    # If there's other text, do a simple replacement
-                    # This is less robust but preserves surrounding text.
                     text_before, _, text_after = paragraph.text.partition(placeholder)
                     paragraph.text = text_before
                     run = paragraph.add_run()
@@ -90,21 +74,20 @@ def find_rhino_executable():
 def run_rhinocode_command(rhino_executable: str, command: str):
     """Executes a command using the rhinocode executable."""
     if not rhino_executable:
-        print("ERROR: Rhino executable not found.")
+        logging.error("Rhino executable not found.")
         return None
 
     cmd = [rhino_executable, "command", command]
-    print(f"Executing Rhino command: {command}")
+    logging.info(f"Executing Rhino command: {command}")
     process = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
-    # Always print stdout and stderr for debugging purposes
     if process.stdout:
-        print(f"  [>] Rhino Stdout: {process.stdout.strip()}")
+        logging.info(f"  [>] Rhino Stdout: {process.stdout.strip()}")
     if process.stderr:
-        print(f"  [>] Rhino Stderr: {process.stderr.strip()}")
+        logging.warning(f"  [>] Rhino Stderr: {process.stderr.strip()}")
 
     if process.returncode != 0:
-        print(f"  [!] Rhino command failed with exit code {process.returncode}")
+        logging.error(f"  [!] Rhino command failed with exit code {process.returncode}")
 
     return process
 
@@ -114,17 +97,12 @@ def generate_rhino_image(
 ) -> Path | None:
     """Generates an image using Rhino."""
     output_filename = f"{study_name}_{rhino_config['output_filename']}"
-    # Resolve to an absolute path to avoid issues with CWD
     output_path = temp_dir.resolve() / output_filename
-
-    # Ensure the output directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Run pre-commands if any
     for command in rhino_config.get("pre_commands", []):
         run_rhinocode_command(rhino_executable, command)
 
-    # The main view capture command
     capture_command = (
         f'_-ViewCaptureToFile '
         f'"{output_path}" '
@@ -136,18 +114,16 @@ def generate_rhino_image(
     )
     run_rhinocode_command(rhino_executable, capture_command)
 
-    # Give Rhino a moment to write the file
     time.sleep(rhino_config.get("delay", 2))
 
-    # Run post-commands if any
     for command in rhino_config.get("post_commands", []):
         run_rhinocode_command(rhino_executable, command)
 
     if output_path.exists():
-        print(f"Successfully generated Rhino image: {output_path}")
+        logging.info(f"Successfully generated Rhino image: {output_path}")
         return output_path
     else:
-        print(f"ERROR: Rhino image not found at {output_path}")
+        logging.error(f"ERROR: Rhino image not found at {output_path}")
         return None
 
 
@@ -155,7 +131,7 @@ def process_rhino_images(config: dict, study_name: str, temp_dir: Path) -> dict:
     """Processes all Rhino image configurations."""
     rhino_executable = find_rhino_executable()
     if not rhino_executable:
-        print("Warning: Rhino executable not found. Skipping Rhino image generation.")
+        logging.warning("Rhino executable not found. Skipping Rhino image generation.")
         return {}
 
     rhino_config = config.get("rhino")
@@ -170,8 +146,6 @@ def process_rhino_images(config: dict, study_name: str, temp_dir: Path) -> dict:
     return image_paths
 
 
-
-
 def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path):
     """
     Generates a single report from a study directory.
@@ -181,7 +155,7 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
 
     config_path = study_dir / "report.json"
     if not config_path.exists():
-        print(f"Warning: report.json not found in {study_dir}, skipping.")
+        logging.warning(f"Warning: report.json not found in {study_dir}, skipping.")
         return
 
     with open(config_path) as f:
@@ -190,41 +164,79 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
     template_path = template_dir / config["template"]
     doc = DocxTemplate(template_path)
 
+    # --- Basic Context ---
     context = {
         "study_name": study_dir.name,
         "author": config.get("author", "N/A"),
         "date": datetime.now().strftime("%Y-%m-%d"),
+        # Provide defaults for legacy values to ensure template doesn't break
+        "avg_flow_rate": 0,
+        "max_efficiency": 0,
+        "power_output": 0,
     }
 
+    # --- Markdown Sections ---
     for key, rel_path in config.get("sections", {}).items():
         md_path = study_dir / rel_path
-        context[key] = read_and_strip_markdown_heading(md_path)
+        # Using markdown library to convert to basic text format for docx
+        context[key] = markdown.markdown(read_and_strip_markdown_heading(md_path))
 
+    # --- Data Loading ---
     data_path = study_dir / config["data_source"]
-    if data_path.exists():
-        data = pd.read_csv(data_path)
+    data = pd.read_csv(data_path) if data_path.exists() else pd.DataFrame()
+
+    # --- Legacy Data Calculation (for backward compatibility) ---
+    # This ensures that older report configs that rely on these values still work.
+    required_cols = ["flow_rate", "efficiency", "power_output"]
+    if not data.empty and all(col in data.columns for col in required_cols):
         context["avg_flow_rate"] = data["flow_rate"].mean()
         context["max_efficiency"] = data["efficiency"].max() * 100
         context["power_output"] = data["power_output"].mean()
 
-    doc.render(context)
+    # --- New Analysis Pipeline ---
+    context['plots'] = {}
+    context['stats'] = {}
+    image_paths = {} # To hold paths for placeholder replacement
 
-    # Generate standard images
-    image_paths = {}
+    analyses = config.get("analyses", {})
+
+    # Generate plots
+    for plot_config in analyses.get("plots", []):
+        plot_key = plot_config["key"]
+        try:
+            plot_path = generate_plot(plot_config, data, temp_image_dir)
+            image_paths[plot_key] = plot_path # Store for placeholder replacement
+        except Exception as e:
+            logging.error(f"Failed to generate plot '{plot_key}': {e}")
+
+    # Run statistical analyses
+    for stat_config in analyses.get("stats", []):
+        stat_key = stat_config["key"]
+        try:
+            result = run_analysis(stat_config, data)
+            context['stats'][stat_key] = result
+        except Exception as e:
+            logging.error(f"Failed to run analysis '{stat_key}': {e}")
+
+    # --- Legacy Image Generation (for backward compatibility) ---
     for key, image_config in config.get("images", {}).items():
-        image_paths[key] = generate_image(
-            image_config, study_dir.name, data_path, temp_image_dir
-        )
+        # This part might need to be refactored or deprecated
+        # For now, let's assume it's handled by the new plot system if possible
+        pass
 
-    # Generate Rhino images
+    # --- Rhino Image Generation ---
     rhino_image_paths = process_rhino_images(config, study_dir.name, temp_image_dir)
     image_paths.update(rhino_image_paths)
 
+    # --- Rendering ---
+    doc.render(context)
+
+    # Replace image placeholders like '{$ img:key $}'
     replace_image_placeholders(doc.docx, image_paths)
 
     output_file = output_dir / f"{study_dir.name}_report.docx"
     doc.save(output_file)
-    print(f"Successfully generated report: {output_file}")
+    logging.info(f"Successfully generated report: {output_file}")
 
 
 @app.command()

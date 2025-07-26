@@ -37,7 +37,9 @@ def setup_and_teardown_test_environment():
     shutil.copytree(TEMPLATE_DIR, TEST_PROJECT_DIR / "templates")
 
     cmd = [
-        "doc-builder",
+        "python",
+        "-m",
+        "src.document_generator",
         "batch",
         str(TEST_PROJECT_DIR / "studies"),
         "--template-dir",
@@ -46,7 +48,7 @@ def setup_and_teardown_test_environment():
         str(GENERATED_REPORTS_DIR),
     ]
     subprocess.run(
-        cmd, check=True, capture_output=True, text=True, cwd=TEST_PROJECT_DIR
+        cmd, check=True, capture_output=True, text=True, cwd=ROOT_DIR
     )
 
     yield
@@ -79,7 +81,9 @@ def test_rhino_image_is_generated_and_embedded_locally(tmp_path):
     study_2_dir = TEST_DATA_DIR / "Study2"
 
     cmd = [
-        "doc-builder",
+        "python",
+        "-m",
+        "src.document_generator",
         "generate",
         str(study_2_dir),
         "--template-dir",
@@ -88,7 +92,7 @@ def test_rhino_image_is_generated_and_embedded_locally(tmp_path):
         str(local_output_dir),
     ]
     # We expect this to succeed locally
-    subprocess.run(cmd, check=True, capture_output=True, text=True)
+    subprocess.run(cmd, check=True, capture_output=True, text=True, cwd=ROOT_DIR)
 
     # 1. Check that the report was generated
     report_path = local_output_dir / "Study2_report.docx"

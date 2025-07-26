@@ -1,0 +1,35 @@
+{
+    "template": "report_template.docx",
+    "data_source": "data.csv",
+    "author": "Test Author",
+    "sections": {
+        "introduction": "introduction.md"
+    },
+    "analyses": {
+        "plots": [
+            {
+                "key": "scatterplot",
+                "type": "scatterplot",
+                "x": "var1",
+                "y": "var2"
+            },
+            {
+                "key": "histogram",
+                "type": "histogram",
+                "x": "var1",
+                "bins": 10
+            }
+        ],
+        "stats": [
+            {
+                "key": "ttest",
+                "type": "ttest_ind",
+                "series1_name": "var1",
+                "series2_name": "var2"
+            }
+        ]
+    },
+    "rhino": {
+        "enabled": false
+    }
+}

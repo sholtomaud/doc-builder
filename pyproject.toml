@@ -24,6 +24,8 @@ dependencies = [
     "numpy",
     "seaborn",
     "matplotlib",
+    "scipy",
+    "markdown",
 ]
 
 [project.optional-dependencies]
@@ -47,3 +49,12 @@ exclude = ["inspiration"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+addopts = "--strict-markers"
+markers = [
+    "local: marks tests as local-only (e.g., requiring local setup like Rhino)",
+]

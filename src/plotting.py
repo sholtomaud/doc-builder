@@ -1,54 +1,63 @@
 """
-This module contains all the plotting functions for the document generator.
-It uses a registry pattern to make it easy to add new plot types.
+This module provides plotting functions for the document generator.
 """
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
 
-def plot_pairplot(plot_config: dict, data: pd.DataFrame, study_name: str) -> plt.Figure:
-    """Generates a pairplot from the given data."""
-    fig = plt.figure()
-    sns.pairplot(data)
-    return fig
+def create_pairplot(data: pd.DataFrame, **kwargs):
+    """Creates a pairplot using seaborn."""
+    plot = sns.pairplot(data, **kwargs)
+    return plot
+
+def create_scatterplot(data: pd.DataFrame, **kwargs):
+    """Creates a scatterplot using seaborn."""
+    plt.figure() # Create a new figure to avoid overlap
+    plot = sns.scatterplot(data=data, **kwargs)
+    return plot.get_figure()
+
+def create_histogram(data: pd.DataFrame, **kwargs):
+    """Creates a histogram using seaborn."""
+    plt.figure()
+    plot = sns.histplot(data=data, **kwargs)
+    return plot.get_figure()
+
+def create_boxplot(data: pd.DataFrame, **kwargs):
+    """Creates a boxplot using seaborn."""
+    plt.figure()
+    plot = sns.boxplot(data=data, **kwargs)
+    return plot.get_figure()
 
 
-def plot_placeholder(
-    plot_config: dict, data: pd.DataFrame, study_name: str
-) -> plt.Figure:
-    """Generates a placeholder image with text."""
-    fig = plt.figure()
-    text = plot_config.get("text", "Placeholder").replace(
-        "{{ study_name }}", study_name
-    )
-    plt.text(0.5, 0.5, text, ha="center", va="center", fontsize=20)
-    return fig
-
-
-# The registry that maps plot types to their corresponding functions.
-# To add a new plot type, create a function and add it to this dictionary.
 PLOT_REGISTRY = {
-    "pairplot": plot_pairplot,
-    "placeholder": plot_placeholder,
+    "pairplot": create_pairplot,
+    "scatterplot": create_scatterplot,
+    "histogram": create_histogram,
+    "boxplot": create_boxplot,
 }
 
-
-def generate_plot_from_config(
-    plot_config: dict, data: pd.DataFrame, study_name: str
-) -> plt.Figure | None:
+def generate_plot(plot_config: dict, data: pd.DataFrame, output_dir: Path):
     """
-    Looks up the plot type in the registry and calls the corresponding function.
+    Generates a plot based on the provided configuration.
     """
     plot_type = plot_config.get("type")
-    if not plot_type:
-        print("Error: Plot configuration is missing the 'type' key.")
-        return None
+    if plot_type not in PLOT_REGISTRY:
+        raise ValueError(f"Unknown plot type: {plot_type}")
 
-    plot_function = PLOT_REGISTRY.get(plot_type)
-    if not plot_function:
-        print(f"Error: Unknown plot type '{plot_type}' requested.")
-        return None
+    # Prepare params for the plotting function
+    params = plot_config.copy()
+    del params["type"]
+    key = params.pop("key") # Use key for filename, not for plotting function
 
-    return plot_function(plot_config, data, study_name)
+    # Generate the plot
+    plot = PLOT_REGISTRY[plot_type](data=data, **params)
+
+    # Save the plot
+    output_path = output_dir / f"{key}.png"
+    plot.savefig(output_path)
+    plt.close(plot) # Close the plot to free memory
+
+    return output_path
