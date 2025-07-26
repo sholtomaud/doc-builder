@@ -3,10 +3,10 @@
 # Phony targets
 .PHONY: install test clean generate regenerate-checkpoint test-debug
 
-# Install the package in editable mode
+# Install the package in editable mode with test dependencies
 install:
-	@echo "Installing the package in editable mode..."
-	python -m pip install -e .
+	@echo "Installing the package in editable mode with test dependencies..."
+	python -m pip install -e .[test]
 
 # Run tests and clean up afterwards
 test:

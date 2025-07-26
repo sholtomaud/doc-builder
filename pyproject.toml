@@ -22,6 +22,14 @@ dependencies = [
     "docxtpl",
     "pandas",
     "numpy",
+    "seaborn",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "docx2txt",
 ]
 
 [tool.setuptools.packages.find]

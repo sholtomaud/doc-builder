@@ -85,6 +85,7 @@ If you want to contribute to the development of this tool, you can install it in
     cd doc-builder
     make install
     ```
+    This installs the package and all test dependencies.
 2.  **Run tests:**
     ```bash
     # Run tests and automatically clean up
