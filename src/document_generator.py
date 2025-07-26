@@ -193,7 +193,9 @@ def generate_single_report(study_dir: Path, template_dir: Path, output_dir: Path
                 **image_config,
             }
             # The old format might pass a data source string, not a DataFrame
-            plot_data_path = study_dir / image_config.get("data_source", config["data_source"])
+            plot_data_path = study_dir / image_config.get(
+                "data_source", config["data_source"]
+            )
             plot_data = pd.read_csv(plot_data_path) if plot_data_path.exists() else data
 
             plot_path = generate_plot(plot_config, plot_data, temp_image_dir)
