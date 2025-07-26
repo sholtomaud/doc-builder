@@ -105,7 +105,7 @@ def run_rhinocode_command(rhino_executable: str, command: str):
 
     if process.returncode != 0:
         print(f"  [!] Rhino command failed with exit code {process.returncode}")
-    
+
     return process
 
 
@@ -116,7 +116,7 @@ def generate_rhino_image(
     output_filename = f"{study_name}_{rhino_config['output_filename']}"
     # Resolve to an absolute path to avoid issues with CWD
     output_path = temp_dir.resolve() / output_filename
-    
+
     # Ensure the output directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -135,7 +135,7 @@ def generate_rhino_image(
         f'_Enter'
     )
     run_rhinocode_command(rhino_executable, capture_command)
-    
+
     # Give Rhino a moment to write the file
     time.sleep(rhino_config.get("delay", 2))
 

@@ -1,14 +1,15 @@
 # ./Iterate2.py (or your chosen filename)
-import subprocess
 import os
+import subprocess
 import time  # Add time module for delays
+
 from docx import Document
 from docx.shared import Inches, Mm
-from PIL import Image # Pillow library
+from PIL import Image  # Pillow library
 
 # --- Path Configuration ---
 script_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir_name = "output_files" 
+output_dir_name = "output_files"
 abs_output_dir = os.path.join(script_dir, output_dir_name)
 
 if not os.path.exists(abs_output_dir):
@@ -24,12 +25,12 @@ def run_rhinocode_command(command_str):
     if not os.path.exists(rhino_executable_path):
         rhino_executable_path = "/Applications/Rhino 8.app/Contents/Resources/bin/rhinocode"
         if not os.path.exists(rhino_executable_path):
-            print(f"ERROR: Rhino executable not found at /Applications/RhinoWIP.app/... or /Applications/Rhino 8.app/...")
-            print(f"Please verify the path to 'rhinocode'.")
-            return None 
+            print("ERROR: Rhino executable not found at /Applications/RhinoWIP.app/... or /Applications/Rhino 8.app/...")
+            print("Please verify the path to 'rhinocode'.")
+            return None
 
     cmd = [rhino_executable_path, "command", command_str]
-    
+
     full_command_for_print = f"Executing: {rhino_executable_path} command \"{command_str}\""
     print(full_command_for_print)
 
@@ -41,24 +42,24 @@ def run_rhinocode_command(command_str):
     stdout_has_problem = any(keyword in stdout_lower for keyword in problem_keywords)
     stderr_has_problem = any(keyword in stderr_lower for keyword in problem_keywords)
 
-    print(f"--- Rhino Command Output ---")
+    print("--- Rhino Command Output ---")
     print(f"Command Sent: \"{command_str}\"")
     print(f"Return Code: {process.returncode}")
     if process.stdout.strip():
         print(f"Stdout:\n{process.stdout.strip()}")
     else:
-        print(f"Stdout: (empty)")
+        print("Stdout: (empty)")
     if process.stderr.strip():
         print(f"Stderr:\n{process.stderr.strip()}")
     else:
-        print(f"Stderr: (empty)")
-    
+        print("Stderr: (empty)")
+
     if process.returncode != 0 or stdout_has_problem or stderr_has_problem:
-        print(f"Status: Potential Issue Detected in Rhino execution.")
+        print("Status: Potential Issue Detected in Rhino execution.")
     else:
-        print(f"Status: Rhino command likely succeeded.")
-    print(f"----------------------------")
-    
+        print("Status: Rhino command likely succeeded.")
+    print("----------------------------")
+
     return process
 
 def set_landscape_a3(doc):
@@ -90,18 +91,18 @@ def create_docx_from_image(image_path, docx_path, model_value):
             # If ViewCaptureToFile doesn't embed DPI, Pillow might use a default like 72 or 96.
             # Forcing an interpretation for DOCX layout:
             assumed_dpi_for_layout = 150 # Higher DPI means smaller size in inches for same pixels
-            
+
             img_width_inches_at_assumed_dpi = width_px / assumed_dpi_for_layout
             # img_height_inches_at_assumed_dpi = height_px / assumed_dpi_for_layout # Not directly used if only width is set
 
         # A3 Landscape: page width Mm(420), page height Mm(297)
         # Margins: typical 1 inch (25.4mm) each side. Or 0.5 inch for more space.
         page_margin_inches = 0.75 # Use Inches(0.75).inches if you prefer
-        
+
         # Available width on A3 landscape page
-        a3_width_inches = Mm(420).inches 
+        a3_width_inches = Mm(420).inches
         available_doc_width_inches = a3_width_inches - (2 * page_margin_inches)
-        
+
         print(f"Image pixel dimensions: {width_px}x{height_px} px")
         print(f"Image size at {assumed_dpi_for_layout} DPI for layout: {img_width_inches_at_assumed_dpi:.2f} inches wide")
         print(f"DOCX available width (A3 landscape with {page_margin_inches}\" margins): {available_doc_width_inches:.2f} inches")
@@ -111,7 +112,7 @@ def create_docx_from_image(image_path, docx_path, model_value):
         # If the image (at assumed_dpi_for_layout) is already narrower than available, use its size.
         # Otherwise, shrink it to fit the available width.
         display_width_inches = min(img_width_inches_at_assumed_dpi, available_doc_width_inches)
-        
+
         # Sanity check: if display_width_inches becomes too small (e.g. very high DPI image)
         # ensure it's at least a certain minimum or rethink. For now, this logic is usually fine.
         # If original pixel width is small, e.g. 300px, display_width_inches will be small.
@@ -138,11 +139,11 @@ def create_docx_from_image(image_path, docx_path, model_value):
         print(f"Error saving DOCX {docx_path}: {e}")
 
 # --- Main Iteration Logic ---
-for value in range(8, 30, 8): 
+for value in range(8, 30, 8):
     print(f"\n--- Processing for value: {value} ---")
 
     run_rhinocode_command(f"GetInteger {value} {value/4}")
-    run_rhinocode_command("_SelAll") 
+    run_rhinocode_command("_SelAll")
 
     # Set display mode for cleaner render
     # IMPORTANT: Ensure "Rendered" mode in your Rhino has a SOLID WHITE background
@@ -151,16 +152,16 @@ for value in range(8, 30, 8):
 
     stl_filename = f"model_{value}.stl"
     abs_stl_path = os.path.join(abs_output_dir, stl_filename)
-    export_stl_command = f'_-Export "{abs_stl_path}" _EnterEnd' 
+    export_stl_command = f'_-Export "{abs_stl_path}" _EnterEnd'
     run_rhinocode_command(export_stl_command)
 
-    run_rhinocode_command("_SelAll") 
+    run_rhinocode_command("_SelAll")
     run_rhinocode_command("_Zoom _Selected")
     run_rhinocode_command("_SelNone")
 
     png_filename = f"render_{value}.png"
     abs_png_path = os.path.join(abs_output_dir, png_filename)
-    
+
     # ViewCaptureToFile: Still using the "chained input" style.
     # If options (Width, Height, TransparentBackground) are not applied,
     # a helper Rhino Python script is the most reliable alternative.
@@ -179,7 +180,7 @@ for value in range(8, 30, 8):
 
     docx_filename = f"report_{value}.docx"
     abs_docx_path = os.path.join(abs_output_dir, docx_filename)
-    
+
     # Add retry logic for PNG file
     max_retries = 3
     retry_count = 0
