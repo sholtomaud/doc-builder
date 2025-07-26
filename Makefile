@@ -13,6 +13,11 @@ test:
 	@echo "Running tests..."
 	python -m pytest $(PYTEST_ARGS)
 
+# Run tests for CI, excluding local-only tests
+test-ci:
+	@echo "Running CI tests..."
+	python -m pytest -m "not local"
+
 # Run linter
 lint:
 	@echo "Running linter..."
