@@ -13,6 +13,11 @@ test:
 	@echo "Running tests..."
 	python -m pytest
 
+# Run linter
+lint:
+	@echo "Running linter..."
+	ruff check .
+
 # Run tests and keep the output for inspection
 test-debug:
 	@echo "Running tests and keeping output in tests/tmp/..."
