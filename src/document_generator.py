@@ -12,6 +12,7 @@ import pandas as pd
 import typer
 from docx.shared import Inches
 from docxtpl import DocxTemplate, InlineImage
+from jinja2 import Environment
 from typing_extensions import Annotated
 
 from analysis import run_analysis
@@ -154,11 +155,11 @@ class ReportGenerator:
         for col in columns:
             if col in self.data.columns:
                 series = self.data[col]
-                stats[f"{col}_mean"] = float(series.mean())
-                stats[f"{col}_std"] = float(series.std())
-                stats[f"{col}_min"] = float(series.min())
-                stats[f"{col}_max"] = float(series.max())
-                stats[f"{col}_median"] = float(series.median())
+                stats[f"{col}_mean"] = round(float(series.mean()), 2)
+                stats[f"{col}_std"] = round(float(series.std()), 2)
+                stats[f"{col}_min"] = round(float(series.min()), 2)
+                stats[f"{col}_max"] = round(float(series.max()), 2)
+                stats[f"{col}_median"] = round(float(series.median()), 2)
         
         return stats
 
@@ -170,7 +171,7 @@ class ReportGenerator:
         
         correlation = self.data[var1].corr(self.data[var2])
         return {
-            "correlation": float(correlation),
+            "correlation": round(float(correlation), 2),
             "variables": [var1, var2]
         }
 
@@ -190,12 +191,12 @@ class ReportGenerator:
             # Handle different result types
             if hasattr(result, 'mean'):  # Series-like
                 return {
-                    "value": float(result.mean()),
+                    "value": round(float(result.mean()), 2),
                     "type": "series_mean"
                 }
             else:  # Scalar
                 return {
-                    "value": float(result),
+                    "value": round(float(result), 2),
                     "type": "scalar"
                 }
         except Exception as e:
@@ -215,11 +216,11 @@ class ReportGenerator:
 
         if not self.data.empty:
             if "flow_rate" in self.data.columns:
-                context["avg_flow_rate"] = float(self.data["flow_rate"].mean())
+                context["avg_flow_rate"] = round(float(self.data["flow_rate"].mean()), 2)
             if "efficiency" in self.data.columns:
-                context["max_efficiency"] = float(self.data["efficiency"].max() * 100)
+                context["max_efficiency"] = round(float(self.data["efficiency"].max() * 100), 2)
             if "power_output" in self.data.columns:
-                context["power_output"] = float(self.data["power_output"].mean())
+                context["power_output"] = round(float(self.data["power_output"].mean()), 2)
         
         return context
 
