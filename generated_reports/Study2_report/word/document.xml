@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:mo="http://schemas.microsoft.com/office/mac/office/2008/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mv="urn:schemas-microsoft-com:mac:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 wp14"><w:body><w:p><w:r><w:t xml:space="preserve">Study2</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve">Dr. Gemini</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve">2025-07-27</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t>Abstract</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve"><p>This is the abstract for Study2. This study explores alternative bucket designs.</p></w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t>Introduction</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve"><p>This is the introduction for Study2.</p></w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve"/><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve"/></w:r><w:r><w:drawing><wp:inline xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+  <wp:extent cx="5486400" cy="4114800"/>
+  <wp:docPr id="1001" name="Picture 1"/>
+  <wp:cNvGraphicFramePr>
+    <a:graphicFrameLocks noChangeAspect="1"/>
+  </wp:cNvGraphicFramePr>
+  <a:graphic>
+    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+      <pic:pic>
+        <pic:nvPicPr>
+          <pic:cNvPr id="0" name="cad_model.png"/>
+          <pic:cNvPicPr/>
+        </pic:nvPicPr>
+        <pic:blipFill>
+          <a:blip r:embed="rId9"/>
+          <a:stretch>
+            <a:fillRect/>
+          </a:stretch>
+        </pic:blipFill>
+        <pic:spPr>
+          <a:xfrm>
+            <a:off x="0" y="0"/>
+            <a:ext cx="5486400" cy="4114800"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect"/>
+        </pic:spPr>
+      </pic:pic>
+    </a:graphicData>
+  </a:graphic>
+</wp:inline>
+</w:drawing></w:r><w:r><w:t xml:space="preserve"/><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t>Results</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve"/></w:r><w:r><w:drawing><wp:inline xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+  <wp:extent cx="5486400" cy="5486400"/>
+  <wp:docPr id="1002" name="Picture 1"/>
+  <wp:cNvGraphicFramePr>
+    <a:graphicFrameLocks noChangeAspect="1"/>
+  </wp:cNvGraphicFramePr>
+  <a:graphic>
+    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+      <pic:pic>
+        <pic:nvPicPr>
+          <pic:cNvPr id="0" name="plot.png"/>
+          <pic:cNvPicPr/>
+        </pic:nvPicPr>
+        <pic:blipFill>
+          <a:blip r:embed="rId10"/>
+          <a:stretch>
+            <a:fillRect/>
+          </a:stretch>
+        </pic:blipFill>
+        <pic:spPr>
+          <a:xfrm>
+            <a:off x="0" y="0"/>
+            <a:ext cx="5486400" cy="5486400"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect"/>
+        </pic:spPr>
+      </pic:pic>
+    </a:graphicData>
+  </a:graphic>
+</wp:inline>
+</w:drawing></w:r><w:r><w:t xml:space="preserve"/><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t>Performance Metrics</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve">The key performance indicators are as follows:</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve">   * Average Flow Rate: 1.9 m³/s</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve">   * Maximum Efficiency: 88.0%</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve">   * Calculated Power Output: 14.86 kW</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve"><p>The results from Study2 show a marked improvement in efficiency with the new bucket design.</p></w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t>Discussion</w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve"><p>This is the discussion for Study2.</p></w:t><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:br/></w:r></w:p><w:p><w:r><w:t>Conclusion</w:t><w:br/></w:r></w:p><w:p><w:r><w:t xml:space="preserve"><p>This is the conclusion for Study2.</p></w:t></w:r></w:p><w:sectPr w:rsidR="00FC693F" w:rsidRPr="0006063C" w:rsidSect="00034616"><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1800" w:bottom="1440" w:left="1800" w:header="720" w:footer="720" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="360"/></w:sectPr></w:body></w:document>
