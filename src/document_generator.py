@@ -86,8 +86,12 @@ class ReportGenerator:
             'computed': {}
         }
 
-        # Legacy computations (for backward compatibility)
-        context['computed'].update(self._run_legacy_computations())
+        # New analysis pipeline
+        analyses = self.config.get("analyses", {})
+
+        if not analyses:
+            # Legacy computations (for backward compatibility)
+            context.update(self._run_legacy_computations())
 
         # Legacy top-level 'computations' block
         if "computations" in self.config and isinstance(
@@ -161,11 +165,11 @@ class ReportGenerator:
         for col in columns:
             if col in self.data.columns:
                 series = self.data[col]
-                stats[f"{col}_mean"] = round(float(series.mean()), 2)
-                stats[f"{col}_std"] = round(float(series.std()), 2)
-                stats[f"{col}_min"] = round(float(series.min()), 2)
-                stats[f"{col}_max"] = round(float(series.max()), 2)
-                stats[f"{col}_median"] = round(float(series.median()), 2)
+                stats[f"{col}_mean"] = float(series.mean())
+                stats[f"{col}_std"] = float(series.std())
+                stats[f"{col}_min"] = float(series.min())
+                stats[f"{col}_max"] = float(series.max())
+                stats[f"{col}_median"] = float(series.median())
 
         return stats
 
@@ -177,7 +181,7 @@ class ReportGenerator:
 
         correlation = self.data[var1].corr(self.data[var2])
         return {
-            "correlation": round(float(correlation), 2),
+            "correlation": float(correlation),
             "variables": [var1, var2]
         }
 
@@ -197,12 +201,12 @@ class ReportGenerator:
             # Handle different result types
             if hasattr(result, 'mean'):  # Series-like
                 return {
-                    "value": round(float(result.mean()), 2),
+                    "value": float(result.mean()),
                     "type": "series_mean"
                 }
             else:  # Scalar
                 return {
-                    "value": round(float(result), 2),
+                    "value": float(result),
                     "type": "scalar"
                 }
         except Exception as e:
@@ -222,17 +226,11 @@ class ReportGenerator:
 
         if not self.data.empty:
             if "flow_rate" in self.data.columns:
-                context["avg_flow_rate"] = round(
-                    float(self.data["flow_rate"].mean()), 2
-                )
+                context["avg_flow_rate"] = float(self.data["flow_rate"].mean())
             if "efficiency" in self.data.columns:
-                context["max_efficiency"] = round(
-                    float(self.data["efficiency"].max() * 100), 2
-                )
+                context["max_efficiency"] = float(self.data["efficiency"].max() * 100)
             if "power_output" in self.data.columns:
-                context["power_output"] = round(
-                    float(self.data["power_output"].mean()), 2
-                )
+                context["power_output"] = float(self.data["power_output"].mean())
 
         return context
 
