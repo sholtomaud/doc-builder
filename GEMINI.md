@@ -15,10 +15,10 @@ The system is structured around the following components:
 
 - **Configuration (`report.json`):**
   - Each report is defined by a `report.json` file.
-  - This file specifies the `.docx` template to use, the data sources, the markdown files for different sections, and the configuration for generating images.
+  - This file specifies the `.docx` template to use, the data sources and the configuration for generating images.
 
 - **Template (`.docx`):**
-  - A user-created `.docx` file containing Jinja2 placeholders (e.g., `{{ variable }}`) and custom image placeholders (e.g., `{$ img:key $}`).
+  - A user-created `.docx` file containing placeholders (e.g., `{{ variable }}`) 
 
 - **Source Code Location:**
   - The main script is `src/document_generator.py`.
@@ -87,18 +87,4 @@ If intentional changes are made to the output, the checkpoint must be updated:
 # This command cleans the old checkpoint and regenerates it with the latest output
 make regenerate-checkpoint 
 ```
-
-## 6. Standard Workflow (`gemini.sh`)
-
-To ensure a safe and consistent development process, a wrapper script `gemini.sh` has been created. This is the standard way to start a work session on this project.
-
-To start, simply run:
-```bash
-./gemini.sh
-```
-This script will automatically:
-1.  **Check for uncommitted git changes.**
-2.  **Run pre-flight checks** (`lint` and `test`) to ensure the project is in a good state.
-3.  **Launch the Gemini CLI** with `--sandbox` and `--checkpointing` enabled.
-4.  **Display safety reminders** before the session begins.
 
